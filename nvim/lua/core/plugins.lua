@@ -98,77 +98,22 @@ require("lazy").setup({
         vim.cmd('colorscheme kanagawa')
     end,
 },
--- В вашем plugins.lua
 {
-    'akinsho/toggleterm.nvim',
+    "akinsho/toggleterm.nvim",
     version = "*",
     config = function()
         require("toggleterm").setup({
             size = 15,
-            open_mapping = [[<c-\>]],
-            hide_numbers = true,
-            shade_filetypes = {},
-            shade_terminals = true,
-            shading_factor = 2,
+            open_mapping = [[<C-\>]],
+            direction = "horizontal",
             start_in_insert = true,
-            insert_mappings = true,
-            persist_size = true,
-            direction = 'horizontal',
+            persist_mode = true,
             close_on_exit = false,
         })
-        
-        -- 📦 СОЗДАЁМ ОДИН ПОСТОЯННЫЙ ТЕРМИНАЛ
-        local build_terminal = nil
-        
-        -- Функция для получения или создания терминала
-        local function get_build_terminal()
-            if not build_terminal then
-                local Terminal = require('toggleterm.terminal').Terminal
-                build_terminal = Terminal:new({
-                    cmd = 'zsh',
-                    direction = 'horizontal',
-                    hidden = false,
-                    close_on_exit = false,
-                    persist_mode = true,
-                })
-            end
-            return build_terminal
-        end
-        
-        -- 🔨 Открыть терминал для сборки
-        vim.keymap.set('n', '<leader>mt', function()
-            local term = get_build_terminal()
-            term:toggle()
-            vim.defer_fn(function()
-                vim.api.nvim_feedkeys('make 2>&1\r', 'n', true)
-            end, 100)
-        end, { desc = 'Open build terminal and run make' })
-        
-        -- ▶️ Открыть терминал для запуска
-        vim.keymap.set('n', '<leader>rr', function()
-            local term = get_build_terminal()
-            term:toggle()
-            vim.defer_fn(function()
-                vim.api.nvim_feedkeys('./a.out\r', 'n', true)
-            end, 100)
-        end, { desc = 'Open build terminal and run program' })
-        
-        -- 📝 Просто открыть терминал
-        vim.keymap.set('n', '<leader>tt', function()
-            local term = get_build_terminal()
-            term:toggle()
-        end, { desc = 'Toggle build terminal' })
-        
-        -- 🧹 Очистить терминал
-        vim.keymap.set('n', '<leader>tc', function()
-            local term = get_build_terminal()
-            term:toggle()
-            vim.defer_fn(function()
-                vim.api.nvim_feedkeys('clear\r', 'n', true)
-            end, 100)
-        end, { desc = 'Clear terminal' })
     end,
 },
+
+-- В вашем plugins.lua
     {'neovim/nvim-lspconfig'},
     {'hrsh7th/cmp-nvim-lsp'}, 
     {'hrsh7th/cmp-buffer'}, 

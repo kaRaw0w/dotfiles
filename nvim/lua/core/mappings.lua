@@ -15,10 +15,10 @@ vim.keymap.set("n", "<leader>tl", ":tablast<CR>") -- последняя вкла
 vim.keymap.set("n", "<leader>tf", ":tabfirst<CR>") -- первая вкладка
 
 -- Изменение размера с помощью Ctrl + Стрелки
-vim.keymap.set('n', '<C-Up>', ':resize +2<CR>', { desc = 'Увеличить высоту' })
-vim.keymap.set('n', '<C-Down>', ':resize -2<CR>', { desc = 'Уменьшить высоту' })
-vim.keymap.set('n', '<C-Left>', ':vertical resize -2<CR>', { desc = 'Уменьшить ширину' })
-vim.keymap.set('n', '<C-Right>', ':vertical resize +2<CR>', { desc = 'Увеличить ширину' })
+vim.keymap.set("t", "<C-Up>", "<C-\\><C-n><cmd>resize +2<CR>i")
+vim.keymap.set("t", "<C-Down>", "<C-\\><C-n><cmd>resize -2<CR>i")
+vim.keymap.set("t", "<C-Left>", "<C-\\><C-n><cmd>vertical resize -2<CR>i")
+vim.keymap.set("t", "<C-Right>", "<C-\\><C-n><cmd>vertical resize +2<CR>i")
 
 -- Переключение между буферами M - alt если что
 -- silent - не выводит снизу информацию о набираемой команде
