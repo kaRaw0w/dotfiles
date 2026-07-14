@@ -10,9 +10,166 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
     {'nvim-treesitter/nvim-treesitter'},
-    {'rebelot/kanagawa.nvim'},
+{
+    'rebelot/kanagawa.nvim',
+    config = function()
+        require('kanagawa').setup({
+            transparent = true, -- Включает прозрачность фона
+            
+            -- Настройка цветов для прозрачности
+            colors = {
+                theme = {
+                    all = {
+                        ui = {
+                            bg_gutter = "none", -- Убираем фон для LineNr, SignColumn, FoldColumn
+                        }
+                    },
+                    -- Если используете тему wave (по умолчанию)
+                    wave = {
+                        ui = {
+                            float = {
+                                bg = "none", -- Прозрачные плавающие окна
+                            },
+                        },
+                    },
+                },
+            },
+            
+            -- Переопределение хайлайтов для прозрачности
+            overrides = function(colors)
+                local theme = colors.theme
+                return {
+                    -- Делаем прозрачными стандартные элементы
+                    Normal = { bg = "none" },
+                    NormalFloat = { bg = "none" },
+                    FloatBorder = { bg = "none" },
+                    FloatTitle = { bg = "none" },
+                    
+                    -- Прозрачность для статусной строки
+                    StatusLine = { bg = "none" },
+                    StatusLineNC = { bg = "none" },
+                    
+                    -- Прозрачность для вкладок (tabline)
+                    TabLine = { bg = "none" },
+                    TabLineFill = { bg = "none" },
+                    TabLineSel = { bg = "none" },
+                    
+                    -- Прозрачность для barbar.nvim вкладок
+                    BufferTabpageFill = { bg = "none" },
+                    BufferCurrent = { bg = "none" },
+                    BufferCurrentMod = { bg = "none" },
+                    BufferCurrentSign = { bg = "none" },
+                    BufferCurrentIcon = { bg = "none" },
+                    BufferCurrentTarget = { bg = "none" },
+                    
+                    BufferInactive = { bg = "none" },
+                    BufferInactiveMod = { bg = "none" },
+                    BufferInactiveSign = { bg = "none" },
+                    BufferInactiveIcon = { bg = "none" },
+                    BufferInactiveTarget = { bg = "none" },
+                    
+                    -- Для NeoTree
+                    NeoTreeNormal = { bg = "none" },
+                    NeoTreeNormalNC = { bg = "none" },
+                    
+                    -- Для Telescope
+                    TelescopeNormal = { bg = "none" },
+                    TelescopeBorder = { bg = "none" },
+                    TelescopePromptNormal = { bg = "none" },
+                    
+                    -- Для Lualine
+                    LualineNormal = { bg = "none" },
+                    LualineInactive = { bg = "none" },
+                    
+                    -- Для автодополнения (cmp)
+                    Pmenu = { bg = "none" },
+                    PmenuSel = { bg = "none" },
+                    PmenuSbar = { bg = "none" },
+                    PmenuThumb = { bg = "none" },
+                    
+                    -- Для боковой панели
+                    WinBar = { bg = "none" },
+                    WinBarNC = { bg = "none" },
+                }
+            end,
+        })
+        
+        -- Применяем тему
+        vim.cmd('colorscheme kanagawa')
+    end,
+},
+-- В вашем plugins.lua
+{
+    'akinsho/toggleterm.nvim',
+    version = "*",
+    config = function()
+        require("toggleterm").setup({
+            size = 15,
+            open_mapping = [[<c-\>]],
+            hide_numbers = true,
+            shade_filetypes = {},
+            shade_terminals = true,
+            shading_factor = 2,
+            start_in_insert = true,
+            insert_mappings = true,
+            persist_size = true,
+            direction = 'horizontal',
+            close_on_exit = false,
+        })
+        
+        -- 📦 СОЗДАЁМ ОДИН ПОСТОЯННЫЙ ТЕРМИНАЛ
+        local build_terminal = nil
+        
+        -- Функция для получения или создания терминала
+        local function get_build_terminal()
+            if not build_terminal then
+                local Terminal = require('toggleterm.terminal').Terminal
+                build_terminal = Terminal:new({
+                    cmd = 'zsh',
+                    direction = 'horizontal',
+                    hidden = false,
+                    close_on_exit = false,
+                    persist_mode = true,
+                })
+            end
+            return build_terminal
+        end
+        
+        -- 🔨 Открыть терминал для сборки
+        vim.keymap.set('n', '<leader>mt', function()
+            local term = get_build_terminal()
+            term:toggle()
+            vim.defer_fn(function()
+                vim.api.nvim_feedkeys('make 2>&1\r', 'n', true)
+            end, 100)
+        end, { desc = 'Open build terminal and run make' })
+        
+        -- ▶️ Открыть терминал для запуска
+        vim.keymap.set('n', '<leader>rr', function()
+            local term = get_build_terminal()
+            term:toggle()
+            vim.defer_fn(function()
+                vim.api.nvim_feedkeys('./a.out\r', 'n', true)
+            end, 100)
+        end, { desc = 'Open build terminal and run program' })
+        
+        -- 📝 Просто открыть терминал
+        vim.keymap.set('n', '<leader>tt', function()
+            local term = get_build_terminal()
+            term:toggle()
+        end, { desc = 'Toggle build terminal' })
+        
+        -- 🧹 Очистить терминал
+        vim.keymap.set('n', '<leader>tc', function()
+            local term = get_build_terminal()
+            term:toggle()
+            vim.defer_fn(function()
+                vim.api.nvim_feedkeys('clear\r', 'n', true)
+            end, 100)
+        end, { desc = 'Clear terminal' })
+    end,
+},
     {'neovim/nvim-lspconfig'},
-
     {'hrsh7th/cmp-nvim-lsp'}, 
     {'hrsh7th/cmp-buffer'}, 
     {'hrsh7th/cmp-path'},
@@ -29,20 +186,34 @@ require("lazy").setup({
           "MunifTanjim/nui.nvim",
         }
     },
-    {'romgrk/barbar.nvim',
-        dependencies = {
-          'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
-          'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
-        },
-        init = function() vim.g.barbar_auto_setup = false end,
-    opts = {
-      -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
-      animation = true,
-      insert_at_start = true,
-      -- …etc.
+    {
+      'romgrk/barbar.nvim',
+      dependencies = {
+        'lewis6991/gitsigns.nvim',
+        'nvim-tree/nvim-web-devicons',
+      },
+      -- Убираем init, который отключает автозагрузку
+      -- init = function() vim.g.barbar_auto_setup = false end,
+      opts = {
+        animation = false,
+        insert_at_start = true,
+        
+        icons = {
+          button = '',
+          modified = {
+            button = '',
+          },
+          filetype = {
+            enabled = true,
+          },
+        separator = {left = '', right = ''},
+
+        -- If true, add an additional separator at the end of the buffer list
+        separator_at_end = false,
+            },
+          },
+      version = '^1.0.0',
     },
-    version = '^1.0.0', -- optional: only update when a new 1.x version is released
-  },
     {
         'nvim-lualine/lualine.nvim',
         dependencies = { 'nvim-tree/nvim-web-devicons' }
@@ -88,11 +259,69 @@ require("lazy").setup({
         },
     },
     { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
-    -- { "rcarriga/nvim-dap-ui",
-    --    dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"},
-    --    config = function()
-    --       require("dapui").setup()
-    --    end
-    -- },
-  }
-)
+    -- Установка через lazy.nvim
+    -- VimTeX для работы с LaTeX
+    {
+        "lervag/vimtex",
+        lazy = false, -- загружаем сразу
+        init = function()
+            -- Настройки VimTeX
+            vim.g.vimtex_view_method = "zathura"  -- или "general", "okular", "evince"
+            vim.g.vimtex_compiler_method = "latexmk"
+            vim.g.vimtex_quickfix_mode = 0
+            vim.g.vimtex_compiler_latexmk = {
+                options = {
+                    '-pdf',
+                    '-shell-escape',
+                    '-verbose',
+                    '-file-line-error',
+                    '-synctex=1',
+                    '-interaction=nonstopmode',
+                },
+            }
+        end,
+        config = function()
+            -- Дополнительные настройки VimTeX
+            vim.api.nvim_create_augroup("vimtex_custom", { clear = true })
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = "tex",
+                group = "vimtex_custom",
+                callback = function()
+                    -- Клавиши для VimTeX
+                    vim.keymap.set("n", "<leader>lc", "<plug>(vimtex-compile)", { buffer = true, desc = "Compile LaTeX" })
+                    vim.keymap.set("n", "<leader>lv", "<plug>(vimtex-view)", { buffer = true, desc = "View PDF" })
+                    vim.keymap.set("n", "<leader>ll", "<plug>(vimtex-compile)", { buffer = true, desc = "Compile LaTeX" })
+                    vim.keymap.set("n", "<leader>lk", "<plug>(vimtex-stop)", { buffer = true, desc = "Stop compilation" })
+                    vim.keymap.set("n", "<leader>le", "<plug>(vimtex-errors)", { buffer = true, desc = "Show errors" })
+                    vim.keymap.set("n", "<leader>lt", "<plug>(vimtex-toc-toggle)", { buffer = true, desc = "Toggle TOC" })
+                    
+                    -- Дополнительные удобства для LaTeX
+                    vim.keymap.set("i", "$$", "$$<Left>", { buffer = true, desc = "Insert $$" })
+                    vim.keymap.set("i", "``", "``<Left>", { buffer = true, desc = "Insert ``" })
+                end,
+            })
+        end
+    },
+
+    -- Сниппеты для LaTeX (опционально)
+    {
+        "L3MON4D3/LuaSnip",
+        dependencies = {
+            "saadparwaiz1/cmp_luasnip",
+            "rafamadriz/friendly-snippets",
+        },
+        config = function()
+            require("luasnip.loaders.from_vscode").lazy_load()
+        end,
+    },
+    {
+      "iamcco/markdown-preview.nvim",
+      cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+      build = "cd app && yarn install",
+      init = function()
+        vim.g.mkdp_filetypes = { "markdown" }
+      end,
+      ft = { "markdown" },
+    },
+})
+
